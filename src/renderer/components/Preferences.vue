@@ -22,7 +22,7 @@ const driveLetters = require('windows-drive-letters');
 import Toasted from 'vue-toasted';
 let allDriveLetters = driveLetters.usedLettersSync();
 let currLetter = '';
-if(localStorage.length  !== 0 || typeof localStorage.driveLetter !== 'undefined' || localStorage.driveLetter.length !== 0){
+if(localStorage.getItem("driveLetter") !== null){
   currLetter = localStorage.driveLetter;
 }
 
@@ -38,14 +38,22 @@ export default {
      methods: {
           close(){
               console.log(localStorage);
-              if(localStorage.driveLetter !== undefined){
-                const electron = require('electron')
+              if(localStorage.length  === 0 || typeof localStorage.driveLetter === 'undefined' || localStorage.driveLetter.length === 0){
+ //insert toast
+                  this.$toasted.error('No Drive Letter Set!', {
+                    
+                    position: 'bottom-center',
+                    duration: 5000
+                  })
+
+
+               
+              }else{
+                  const electron = require('electron')
                 const remote = electron.remote;
                 console.log(document.getElementById('closeBtn'))
                 var window = remote.getCurrentWindow();
                 window.close();
-              }else{
-                  //insert toast
               }
         },
         save(){
