@@ -1,9 +1,9 @@
 import { app, BrowserWindow, shell, Menu } from 'electron';
 
-const updater = require('electron-simple-updater');
-updater.init(
-  'https://raw.githubusercontent.com/megahertz/electron-simple-updater/master/example/updates.json'
-);
+// const updater = require('electron-simple-updater');
+// updater.init(
+//   'https://raw.githubusercontent.com/knightfox1337/Deets-McGeets/master/updates.json'
+// );
 
 /**
  * Set `__static` path to static files in production
@@ -32,7 +32,7 @@ function createWindow() {
   });
 
   mainWindow.loadURL(winURL);
-
+  mainWindow.webContents.openDevTools();
   mainWindow.on('closed', () => {
     mainWindow = null;
   });
