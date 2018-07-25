@@ -1,4 +1,4 @@
-# deets-mcgeets
+# deets-mcgeets-builder
 
 > An electron-vue project
 

@@ -1,9 +1,4 @@
-import { app, BrowserWindow, shell, Menu } from 'electron';
-
-// const updater = require('electron-simple-updater');
-// updater.init(
-//   'https://raw.githubusercontent.com/knightfox1337/Deets-McGeets/master/updates.json'
-// );
+import { app, BrowserWindow } from 'electron';
 
 /**
  * Set `__static` path to static files in production
@@ -32,54 +27,10 @@ function createWindow() {
   });
 
   mainWindow.loadURL(winURL);
-  mainWindow.webContents.openDevTools();
+
   mainWindow.on('closed', () => {
     mainWindow = null;
   });
-
-  var menu = Menu.buildFromTemplate([
-    {
-      label: 'Settings',
-      submenu: [
-        {
-          label: 'Preferences',
-          click() {
-            const modalPath =
-              process.env.NODE_ENV === 'development'
-                ? 'http://localhost:9080/#/preferences'
-                : `file://${__dirname}/index.html#preferences`;
-            let win = new BrowserWindow({
-              width: 400,
-              height: 320,
-              frame: false,
-              webPreferences: { webSecurity: false }
-            });
-            win.on('close', function() {
-              win = null;
-            });
-            win.loadURL(modalPath);
-          }
-        },
-        { type: 'separator' },
-        {
-          label: 'Exit',
-          click() {
-            app.quit();
-          }
-        }
-      ]
-    },
-    {
-      label: 'Info',
-      submenu: [
-        { label: 'About' },
-        {
-          label: 'Check for Updates'
-        }
-      ]
-    }
-  ]);
-  Menu.setApplicationMenu(menu);
 }
 
 app.on('ready', createWindow);
@@ -94,4 +45,22 @@ app.on('activate', () => {
   if (mainWindow === null) {
     createWindow();
   }
+});
+
+/**
+ * Auto Updater
+ *
+ * Uncomment the following code below and install `electron-updater` to
+ * support auto updating. Code Signing with a valid certificate is required.
+ * https://simulatedgreg.gitbooks.io/electron-vue/content/en/using-electron-builder.html#auto-updating
+ */
+
+import { autoUpdater } from 'electron-updater';
+
+autoUpdater.on('update-downloaded', () => {
+  autoUpdater.quitAndInstall();
+});
+
+app.on('ready', () => {
+  if (process.env.NODE_ENV === 'production') autoUpdater.checkForUpdates();
 });

@@ -12,7 +12,25 @@
         </div>
       
     </main>
+    <modal name="drive-letter">
+      <div class="wrapper-two">
+       <div class="title">Preferences</div>
+            <form>
+                <label for="drive-letter">Drive letter associated with Jungle Disk</label>
+                <select name="drive-letter" id="drive-letter">
+                  <option></option>
+                    <option v-for="letter in driveLetters" :selected="currentLetter == letter ? true : false">{{letter}}</option>
+                </select>
+                <div class="button-area">
+                    <div class="btn green" v-on:click="save">Save Preferences</div>
+                </div>
+            </form>
+            </div>
+    </modal>
   </div>
+
+  
+
 </template>
 
 <script>
@@ -20,6 +38,15 @@
   import SystemInformation from './LandingPage/SystemInformation'
   import Toasted from 'vue-toasted';
   import { BasicSelect } from 'vue-search-select'
+  import VModal from 'vue-js-modal'
+  const driveLetters = require('windows-drive-letters');
+  let allDriveLetters = driveLetters.usedLettersSync();
+  let currLetter = '';
+  if(localStorage.getItem("driveLetter") !== null){
+    currLetter = localStorage.driveLetter;
+  }
+  Vue.use(VModal);
+  
   const {shell} = require('electron')
   let readdirp = require('readdirp');
   const fs = require('fs');
@@ -84,8 +111,8 @@
 
       //getting Drive letter
       console.log({localStorage});
-      if(localStorage.length  === 0 || typeof localStorage.driveLetter === 'undefined' || localStorage.driveLetter.length === 0){
-        
+      if(localStorage.getItem('driveLetter') === null){
+        that.showDrive();
         that.validSettings = false;
         Vue.toasted.clear();
         Vue.toasted.error('Drive Letter not set.', {
@@ -138,17 +165,11 @@
               console.log(err);
               that.validSettings = false;
               Vue.toasted.clear();
+              that.showDrive();
               Vue.toasted.error('Error reading files, ' + err[0].message, {
                 icon: 'error_outline',
-                position: 'bottom-right',
-                action: {
-                  text: 'Try Again',
-                  onClick: (e, toastObj) => {
-                    
-                    toastObj.goAway(0);
-                    that.init();
-                  }
-                }
+                position: 'bottom-right'
+               
               });
 
               throw err;
@@ -168,7 +189,7 @@
     }
 
     
-     if (typeof localStorage.files === "undefined" || localStorage.files.length === 0) {
+     if (localStorage.getItem('files') === null || localStorage.files.length === 0) {
         Vue.toasted.show('loading Files...', {
               icon: 'hourglass_empty',
               position: 'bottom-right'
@@ -207,6 +228,8 @@
     return {
       validSettings: false,
       files: allFiles,
+      driveLetters: allDriveLetters,
+      currentLetter: currLetter,
       searchText: '', // If value is falsy, reset searchText & searchItem
       hasFile: false,
       item: {
@@ -218,8 +241,8 @@
   methods: {
     openPath(){
       if(this.hasFile){
-        console.log('open Path')
-        shell.openItem(this.item.data.fullParentDir);
+        console.log('open Path', this.item)
+        shell.openItem(this.item.fullParentDir);
       }
     },
     openFile(){
@@ -242,6 +265,49 @@
 
       this.item = this.options[0]
 
+    },
+    showDrive () {
+      this.$modal.show('drive-letter',{
+        title: 'Settings',
+        driveLetters: that.driveLetters,
+        buttons: [
+          {
+            title: 'Save'
+          }
+        ]
+      });
+    },
+    hideDrive () {
+      this.$modal.hide('drive-letter');
+    },
+    save(){
+      const selectLetter = document.getElementById('drive-letter');
+            let selected = selectLetter.options[selectLetter.selectedIndex].value;
+            console.log(selected);
+            if(selected !== ""){
+              localStorage.setItem('driveLetter', selected);
+              console.log(localStorage);
+              Vue.toasted.clear();
+              this.$toasted.success('Preferences Saved!', {
+                icon: 'check',
+                position: 'bottom-right',
+                duration: 1500
+              })
+              this.$modal.hide('drive-letter');
+              that.init();
+              
+            }else{
+              this.$toasted.error('No Drive selected', {
+                
+                position: 'bottom-right',
+                duration: 1500
+              })
+            }
+           
+
+
+
+      
     },
     prefsSaved(){
       
@@ -441,5 +507,24 @@ main > div {
 .doc button.alt {
   color: #42b983;
   background-color: transparent;
+}
+form {
+  margin: 30px 0;
+}
+label {
+  display: block;
+  margin-bottom: 20px;
+}
+.wrapper-two {
+  padding: 30px 70px;
+}
+.title {
+  font-size: 22px;
+}
+form .button-area > div {
+  flex-basis: 100%;
+}
+form .btn {
+  cursor: pointer;
 }
 </style>
